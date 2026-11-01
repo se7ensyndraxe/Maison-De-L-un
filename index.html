@@ -214,36 +214,61 @@
       z-index: 11;
       top: 94px;
       left: var(--page-gutter);
-      display: flex;
-      min-height: 48px;
-      align-items: center;
-      gap: 9px;
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) auto 30px;
+      grid-template-areas: "disc meta controls expand" "disc fallback volume expand";
+      gap: 4px 11px;
+      width: min(430px, calc(100vw - 2 * var(--page-gutter)));
+      min-height: 76px;
       overflow: hidden;
       isolation: isolate;
-      border: 1px solid rgba(255,255,255,.38);
-      border-radius: 18px;
-      padding: 7px 12px 7px 8px;
-      background: linear-gradient(135deg, rgba(255,255,255,.2), rgba(25,29,27,.42) 54%, rgba(255,255,255,.08));
-      box-shadow: 0 14px 38px rgba(0,0,0,.24), 0 0 18px rgba(234,217,184,.15), inset 0 1px 0 rgba(255,255,255,.42), inset 0 -1px 0 rgba(255,255,255,.12);
-      backdrop-filter: blur(26px) saturate(175%);
-      -webkit-backdrop-filter: blur(26px) saturate(175%);
+      border: 1px solid rgba(234,217,184,.4);
+      border-radius: 16px;
+      padding: 10px 12px 10px 10px;
+      background: linear-gradient(135deg, rgba(234,217,184,.16), rgba(20,24,21,.78) 56%, rgba(50,57,44,.68));
+      box-shadow: 0 16px 42px rgba(0,0,0,.3), 0 0 20px rgba(212,189,145,.16), inset 0 1px 0 rgba(234,217,184,.32), inset 0 -1px 0 rgba(255,255,255,.1);
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      transition: width .28s ease, min-height .28s ease, border-radius .28s ease, padding .28s ease;
     }
     .music-panel::before {
       position: absolute;
       z-index: 0;
       inset: 0;
-      background: radial-gradient(ellipse at 15% 0%, rgba(255,255,255,.28), transparent 55%), linear-gradient(110deg, transparent 28%, rgba(255,255,255,.12) 48%, transparent 66%);
+      background: radial-gradient(ellipse at 15% 0%, rgba(234,217,184,.24), transparent 55%), linear-gradient(110deg, transparent 28%, rgba(234,217,184,.1) 48%, transparent 66%);
       background-size: 100% 100%, 220% 100%;
       animation: music-glass-flow 8s ease-in-out infinite;
       content: "";
       pointer-events: none;
     }
     .music-panel > * { position: relative; z-index: 1; }
+    .music-panel.has-error { border-color: rgba(234,217,184,.72); box-shadow: 0 16px 42px rgba(0,0,0,.28), 0 0 20px rgba(212,189,145,.22), inset 0 1px 0 rgba(234,217,184,.34); }
     @keyframes music-glass-flow { 0%, 100% { background-position: 0 0, 100% 0; } 50% { background-position: 0 0, -100% 0; } }
+    .music-disc {
+      grid-area: disc;
+      display: grid;
+      width: 42px;
+      height: 42px;
+      align-self: center;
+      place-items: center;
+      border: 1px solid rgba(234,217,184,.42);
+      border-radius: 50%;
+      background: radial-gradient(circle at 32% 26%, rgba(234,217,184,.32), rgba(212,189,145,.12) 46%, rgba(14,17,15,.4));
+      box-shadow: inset 0 1px 5px rgba(234,217,184,.2), 0 0 16px rgba(212,189,145,.16);
+      color: var(--gold-light);
+      font-size: 19px;
+    }
+    .music-disc.is-playing { animation: music-disc-pulse 2.8s ease-in-out infinite; }
+    @keyframes music-disc-pulse { 50% { box-shadow: inset 0 1px 8px rgba(255,255,255,.34), 0 0 22px rgba(234,217,184,.35); } }
+    .music-meta { grid-area: meta; display: grid; min-width: 0; gap: 2px; }
+    .music-label { display: flex; justify-content: space-between; gap: 8px; color: rgba(247,244,237,.66); font-size: 8px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+    .music-index { white-space: nowrap; }
+    .music-track { overflow: hidden; color: var(--ink); font-size: 12px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .music-state { overflow: hidden; color: rgba(247,244,237,.7); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
     .music-toggle {
       display: grid;
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       flex: 0 0 auto;
       place-items: center;
       border: 1px solid rgba(234,217,184,.35);
@@ -253,11 +278,11 @@
       cursor: pointer;
     }
     .music-toggle:hover, .music-step:hover { background: rgba(255,255,255,.2); box-shadow: 0 0 12px rgba(234,217,184,.22); }
-    .music-steps { display: flex; align-items: center; gap: 2px; }
+    .music-steps { grid-area: controls; display: flex; align-items: center; gap: 4px; }
     .music-step {
       display: grid;
-      width: 25px;
-      height: 32px;
+      width: 24px;
+      height: 34px;
       place-items: center;
       border: 0;
       border-radius: 9px;
@@ -268,12 +293,61 @@
       line-height: 1;
       transition: background .2s ease, box-shadow .2s ease;
     }
-    .music-meta { min-width: 90px; }
-    .music-label { display: block; color: rgba(247,244,237,.55); font-size: 8px; letter-spacing: .15em; text-transform: uppercase; }
-    .music-state { display: block; margin-top: 3px; font-size: 10px; font-weight: 600; }
-    .music-fallback { display: none; margin-top: 4px; color: var(--gold-light); font-size: 9px; text-decoration: underline; text-underline-offset: 2px; }
-    .music-fallback.is-visible { display: inline-block; }
-    .music-volume { width: 70px; height: 3px; accent-color: var(--gold-light); cursor: pointer; }
+    .music-fallback {
+      grid-area: fallback;
+      display: none;
+      width: fit-content;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(234,217,184,.52);
+      border-radius: 5px;
+      padding: 4px 8px;
+      background: rgba(212,189,145,.13);
+      color: var(--gold-light);
+      font-size: 9px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .music-fallback.is-visible { display: inline-flex; }
+    .music-expand {
+      grid-area: expand;
+      display: grid;
+      width: 28px;
+      height: 28px;
+      align-self: center;
+      place-items: center;
+      border: 1px solid rgba(234,217,184,.3);
+      border-radius: 50%;
+      background: rgba(234,217,184,.08);
+      color: var(--gold-light);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      transition: background .2s ease, transform .28s ease;
+    }
+    .music-expand:hover { background: rgba(234,217,184,.2); }
+    .music-panel.is-compact {
+      grid-template-columns: 36px minmax(0, 1fr) 28px;
+      grid-template-areas: "controls meta expand";
+      gap: 8px;
+      width: 178px;
+      min-height: 52px;
+      border-radius: 999px;
+      padding: 6px 8px;
+    }
+    .music-panel.is-compact .music-disc,
+    .music-panel.is-compact .music-step,
+    .music-panel.is-compact .music-index,
+    .music-panel.is-compact .music-track,
+    .music-panel.is-compact .music-fallback,
+    .music-panel.is-compact .music-volume-wrap { display: none; }
+    .music-panel.is-compact .music-meta { display: block; }
+    .music-panel.is-compact .music-label { display: block; overflow: hidden; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+    .music-panel.is-compact .music-state { margin-top: 3px; font-size: 8px; }
+    .music-panel.is-compact .music-toggle { width: 36px; height: 36px; }
+    .music-panel.is-compact .music-steps { justify-self: start; }
+    .music-volume-wrap { grid-area: volume; display: flex; align-items: center; gap: 6px; color: rgba(247,244,237,.55); font-size: 7px; font-weight: 700; letter-spacing: .12em; }
+    .music-volume { width: 64px; height: 3px; accent-color: var(--gold-light); cursor: pointer; }
     #youtube-player { position: fixed; width: 1px; height: 1px; overflow: hidden; border: 0; opacity: .01; pointer-events: none; }
 
     main { position: relative; z-index: 1; overflow: clip; }
@@ -484,13 +558,18 @@
     }
     @media (max-width: 520px) {
       :root { --page-gutter: 22px; }
+      .intro-video { object-fit: contain; object-position: center; filter: brightness(.62); transform: none; transition: filter .7s ease; }
+      .intro.is-ready .intro-video { filter: blur(3px) brightness(.48); transform: none; }
       .wordmark { gap: 9px; }
       .wordmark-symbol { width: 44px; height: 44px; }
       .wordmark-name { font-size: 13px; }
-      .music-panel { left: 18px; gap: 6px; padding-right: 9px; }
-      .music-meta { min-width: 75px; }
-      .music-volume { width: 56px; }
-      .music-step { width: 22px; }
+      .music-panel { top: 82px; left: 18px; grid-template-columns: 38px minmax(0, 1fr) auto; gap: 4px 8px; width: calc(100vw - 36px); min-height: 72px; padding: 9px; }
+      .music-disc { width: 38px; height: 38px; }
+      .music-meta { gap: 1px; }
+      .music-track { font-size: 11px; }
+      .music-step { width: 21px; }
+      .music-toggle { width: 33px; height: 33px; }
+      .music-volume { width: 54px; }
       .hero { min-height: 86svh; align-items: center; padding-top: 169px; padding-bottom: 105px; }
       .hero h1 { font-size: clamp(56px, 15vw, 78px); }
       .hero-lead { font-size: 14px; }
@@ -506,8 +585,20 @@
       .capacity-panel { grid-template-columns: 1fr; }
       .capacity-row:nth-child(2) { border-bottom: 1px solid var(--line); }
       .capacity-row:last-child { border-bottom: 0; }
-      .gallery-grid { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 145px; gap: 8px; }
-      .gallery-item { border-radius: 13px; }
+      .gallery-grid { display: block; columns: 2; column-gap: 8px; }
+      .gallery-item, .gallery-item:nth-child(7n + 1), .gallery-item:nth-child(7n + 5) {
+        display: inline-block;
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        margin: 0 0 8px;
+        break-inside: avoid;
+        grid-row: auto;
+        border-radius: 7px;
+        background: #171916;
+        vertical-align: top;
+      }
+      .gallery-item img { width: 100%; height: auto; object-fit: contain; }
       .food-points, .comfort-list { grid-template-columns: 1fr; }
       .location-card { align-items: flex-start; }
       .location-pin { width: 53px; height: 53px; font-size: 23px; }
@@ -525,7 +616,7 @@
 </head>
 <body class="locked">
   <section class="intro" id="intro" aria-label="Maison De L'un tanıtımı">
-    <video class="intro-video" id="intro-video" autoplay muted playsinline webkit-playsinline preload="auto" poster="https://i.postimg.cc/HnwwWXh8/salon1bilmemkacinciaci.webp" aria-hidden="true" tabindex="-1">
+    <video class="intro-video" id="intro-video" autoplay muted playsinline webkit-playsinline preload="metadata" poster="https://i.postimg.cc/HnwwWXh8/salon1bilmemkacinciaci.webp" aria-hidden="true" tabindex="-1">
       <source src="https://files.catbox.moe/4cluyd.mp4" type="video/mp4">
     </video>
     <div class="intro-shade"></div>
@@ -561,14 +652,21 @@
       </nav>
     </header>
 
-    <div class="music-panel" aria-label="Müzik kontrol paneli">
-      <button class="music-toggle" id="music-toggle" type="button" aria-label="Müziği başlat" title="Müziği başlat"><span aria-hidden="true">♪</span></button>
+    <div class="music-panel is-compact" id="music-panel" aria-label="Müzik oynatıcı">
+      <div class="music-disc" id="music-disc" aria-hidden="true">♪</div>
+      <span class="music-meta">
+        <span class="music-label"><span>Maison ambiyans</span><span class="music-index" id="music-index">01 / 05</span></span>
+        <span class="music-track" id="music-track">Parça 01</span>
+        <span class="music-state" id="music-state">Başlatmak için dokunun</span>
+      </span>
       <div class="music-steps" aria-label="Parça kontrolü">
         <button class="music-step" id="music-previous" type="button" aria-label="Önceki parça" title="Önceki parça"><span aria-hidden="true">‹</span></button>
+        <button class="music-toggle" id="music-toggle" type="button" aria-label="Müziği başlat" title="Müziği başlat"><span aria-hidden="true">♪</span></button>
         <button class="music-step" id="music-next" type="button" aria-label="Sonraki parça" title="Sonraki parça"><span aria-hidden="true">›</span></button>
       </div>
-      <span class="music-meta"><span class="music-label" id="music-label">Ambiyans · 1/5</span><span class="music-state" id="music-state">Müziği aç</span><a class="music-fallback" id="music-fallback" href="https://www.youtube.com/watch?v=jcIIeC_jo5c" target="_blank" rel="noopener noreferrer">YouTube'da aç</a></span>
-      <input class="music-volume" id="music-volume" type="range" min="0" max="100" value="20" aria-label="Müzik ses seviyesi">
+      <button class="music-expand" id="music-expand" type="button" aria-label="Müzik panelini büyüt" aria-expanded="false" title="Müzik panelini büyüt">+</button>
+      <a class="music-fallback" id="music-fallback" href="https://www.youtube.com/watch?v=jcIIeC_jo5c" target="_blank" rel="noopener noreferrer">YouTube'da dinle <span aria-hidden="true">↗</span></a>
+      <label class="music-volume-wrap" for="music-volume"><span>SES</span><input class="music-volume" id="music-volume" type="range" min="0" max="100" value="20" aria-label="Müzik ses seviyesi"></label>
     </div>
     <iframe id="youtube-player" title="Maison De L'un ambiyans müziği" src="https://www.youtube.com/embed/jcIIeC_jo5c?enablejsapi=1&amp;controls=0&amp;playsinline=1&amp;rel=0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" tabindex="-1" aria-hidden="true"></iframe>
 
@@ -809,11 +907,15 @@
 
     const youtubeVideoIds = ["jcIIeC_jo5c", "f8u6riOK3Qk", "iTJ8jnwY-fA", "XJ5Cs29d5x8", "4TvwO5cJO7k"];
     const musicToggle = document.getElementById("music-toggle");
+    const musicPanel = document.getElementById("music-panel");
+    const musicDisc = document.getElementById("music-disc");
+    const musicExpand = document.getElementById("music-expand");
     const musicPrevious = document.getElementById("music-previous");
     const musicNext = document.getElementById("music-next");
     const musicVolume = document.getElementById("music-volume");
     const musicState = document.getElementById("music-state");
-    const musicLabel = document.getElementById("music-label");
+    const musicIndex = document.getElementById("music-index");
+    const musicTrack = document.getElementById("music-track");
     const musicFallback = document.getElementById("music-fallback");
     let currentTrackIndex = 0;
     let musicPlayer;
@@ -829,9 +931,12 @@
       musicToggle.title = musicIsPlaying ? "Müziği duraklat" : "Müziği başlat";
       musicToggle.innerHTML = musicIsPlaying ? '<span aria-hidden="true">Ⅱ</span>' : '<span aria-hidden="true">♪</span>';
       musicState.textContent = musicIsPlaying ? "Müzik çalıyor" : musicError || (musicRequested ? "Bağlanıyor…" : musicHint || "Müziği aç");
-      musicLabel.textContent = `Ambiyans · ${currentTrackIndex + 1}/${youtubeVideoIds.length}`;
+      musicTrack.textContent = `Parça ${String(currentTrackIndex + 1).padStart(2, "0")}`;
+      musicIndex.textContent = `${String(currentTrackIndex + 1).padStart(2, "0")} / ${String(youtubeVideoIds.length).padStart(2, "0")}`;
       musicFallback.href = `https://www.youtube.com/watch?v=${youtubeVideoIds[currentTrackIndex]}`;
       musicFallback.classList.toggle("is-visible", Boolean(musicError));
+      musicPanel.classList.toggle("has-error", Boolean(musicError));
+      musicDisc.classList.toggle("is-playing", musicIsPlaying);
     }
 
     function playTrack(index) {
@@ -867,7 +972,7 @@
       if (code === 2) return "Geçersiz YouTube video adresi";
       if (code === 5) return "Video oynatılamıyor";
       if (code === 100) return "YouTube videosu bulunamadı";
-      if (code === 101 || code === 150) return "Video gömülü oynatmaya kapalı";
+      if (code === 101 || code === 150) return "Bu parça site içinde oynatılamıyor";
       if (code === 153) return "YouTube bağlantısı doğrulanamadı · siteyi HTTPS'te açın";
       return "YouTube bağlantı hatası";
     }
@@ -898,6 +1003,14 @@
       playTrack(currentTrackIndex - 1);
     });
     musicNext.addEventListener("click", () => playTrack(currentTrackIndex + 1));
+    musicExpand.addEventListener("click", () => {
+      const isCompact = musicPanel.classList.toggle("is-compact");
+      const label = isCompact ? "Müzik panelini büyüt" : "Müzik panelini küçült";
+      musicExpand.setAttribute("aria-expanded", String(!isCompact));
+      musicExpand.setAttribute("aria-label", label);
+      musicExpand.title = label;
+      musicExpand.textContent = isCompact ? "+" : "−";
+    });
 
     document.getElementById("enter-site").addEventListener("click", () => {
       intro.classList.add("is-leaving");
