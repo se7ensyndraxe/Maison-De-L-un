@@ -225,8 +225,22 @@
       overflow: visible;
       isolation: isolate;
     }
+    .music-panel::before {
+      position: absolute;
+      z-index: 0;
+      inset: -38px;
+      border-radius: 38px;
+      background: radial-gradient(ellipse at 18% 48%, rgba(202,190,165,.3), transparent 58%), radial-gradient(ellipse at 78% 55%, rgba(156,164,151,.24), transparent 62%);
+      filter: blur(23px);
+      opacity: var(--music-smoke-opacity, .12);
+      transform: translate3d(var(--music-smoke-x, 0px), var(--music-smoke-y, 0px), 0) scale(var(--music-smoke-scale, 1));
+      transition: opacity .6s ease;
+      content: "";
+      pointer-events: none;
+    }
     .music-shell {
       position: relative;
+      z-index: 2;
       display: grid;
       grid-template-columns: minmax(0, 1fr) 24px 24px;
       grid-template-rows: 24px 8px 10px 27px auto;
@@ -275,7 +289,7 @@
     .music-disc.is-playing img { transform: scale(1.55); }
     .music-disc.is-playing { box-shadow: 0 5px 17px rgba(0,0,0,.32), 0 0 18px rgba(212,189,145,.27); }
     .music-disc.is-art-missing img { opacity: 0; }
-    .music-particles { position: absolute; z-index: 4; top: 50%; left: -18px; width: 124px; height: 124px; overflow: visible; pointer-events: none; transform: translateY(-50%); }
+    .music-particles { position: absolute; z-index: 1; top: -44px; left: -44px; width: calc(100% + 88px); height: calc(100% + 88px); overflow: visible; pointer-events: none; }
     .music-meta { position: relative; z-index: 5; grid-area: meta; display: grid; min-width: 0; align-content: center; gap: 2px; }
     .music-track { overflow: hidden; color: var(--ink); font-size: 12px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
     .music-state { display: -webkit-box; overflow: hidden; color: rgba(247,244,237,.66); font-size: 9px; line-height: 1.25; text-overflow: ellipsis; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
@@ -621,15 +635,21 @@
       .wordmark { gap: 9px; }
       .wordmark-symbol { width: 44px; height: 44px; }
       .wordmark-name { font-size: 13px; }
-      .music-panel { top: 82px; left: 14px; width: calc(100vw - 28px); }
-      .music-shell { grid-template-columns: minmax(0, 1fr) 22px 22px; grid-template-rows: 23px 7px 9px 26px auto; gap: 2px 5px; width: calc(100% - 27px); min-height: 90px; margin-left: 27px; padding: 7px 8px 7px 48px; }
-      .music-disc { width: 76px; height: 76px; }
-      .music-track { font-size: 11px; }
-      .music-state { font-size: 8px; }
-      .music-steps { gap: 10px; }
-      .music-toggle { width: 25px; height: 25px; }
-      .music-step { width: 22px; height: 23px; }
-      .music-volume { width: 66px; }
+      .music-panel { top: 82px; left: 14px; width: calc(53vw - 14px); }
+      .music-shell { grid-template-columns: minmax(0, 1fr) 20px 20px; grid-template-rows: 19px 12px 20px auto; grid-template-areas: "meta mute expand" "progress progress progress" "controls controls controls" "details details details"; gap: 1px 3px; width: calc(100% - 20px); min-height: 63px; margin-left: 20px; padding: 4px 5px 4px 33px; }
+      .music-mute, .music-expand { width: 20px; height: 20px; }
+      .music-progress-wrap { display: flex; min-height: 12px; }
+      .music-progress { height: 12px; margin: 0; touch-action: pan-y; }
+      .music-timeline { display: none; }
+      .music-disc { width: 42px; height: 42px; }
+      .music-meta { gap: 1px; }
+      .music-track { font-size: 10px; line-height: 1; }
+      .music-state { display: block; font-size: 7px; line-height: 1; white-space: nowrap; text-overflow: ellipsis; }
+      .music-steps { justify-content: center; gap: 8px; }
+      .music-toggle { width: 22px; height: 22px; }
+      .music-step { width: 20px; height: 21px; }
+      .music-step svg { width: 16px; height: 16px; }
+      .music-volume { width: 60px; }
       .music-queue { gap: 5px; }
       .music-queue button { min-height: 30px; }
       .hero { min-height: 86svh; align-items: center; padding-top: 205px; padding-bottom: 105px; }
@@ -1000,18 +1020,42 @@
     const musicFallback = document.getElementById("music-fallback");
     const musicParticles = document.getElementById("music-particles");
     const musicParticlesContext = musicParticles.getContext("2d");
-    const musicParticlesSize = 124;
-    const musicParticlesScale = Math.min(window.devicePixelRatio || 1, 2);
-    musicParticles.width = musicParticlesSize * musicParticlesScale;
-    musicParticles.height = musicParticlesSize * musicParticlesScale;
-    if (musicParticlesContext) musicParticlesContext.setTransform(musicParticlesScale, 0, 0, musicParticlesScale, 0, 0);
+    const musicParticlesPadding = 44;
+    let musicParticlesScale = 1;
+    let musicParticlesWidth = 0;
+    let musicParticlesHeight = 0;
+    function resizeMusicParticles() {
+      const panelWidth = musicPanel.clientWidth;
+      const panelHeight = musicPanel.offsetHeight;
+      musicParticlesWidth = panelWidth + musicParticlesPadding * 2;
+      musicParticlesHeight = panelHeight + musicParticlesPadding * 2;
+      musicParticlesScale = Math.min(window.devicePixelRatio || 1, 2);
+      musicParticles.style.left = `-${musicParticlesPadding}px`;
+      musicParticles.style.top = `-${musicParticlesPadding}px`;
+      musicParticles.style.width = `${musicParticlesWidth}px`;
+      musicParticles.style.height = `${musicParticlesHeight}px`;
+      musicParticles.width = Math.round(musicParticlesWidth * musicParticlesScale);
+      musicParticles.height = Math.round(musicParticlesHeight * musicParticlesScale);
+      if (musicParticlesContext) {
+        musicParticlesContext.setTransform(musicParticlesScale, 0, 0, musicParticlesScale, 0, 0);
+      }
+    }
+    resizeMusicParticles();
+    window.addEventListener("resize", resizeMusicParticles);
     const musicParticleMotionAllowed = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const musicDust = Array.from({ length: 38 }, () => ({
-      angle: Math.random() * Math.PI * 2,
-      radius: 43 + Math.random() * 18,
+    const musicDust = Array.from({ length: 280 }, () => ({
+      position: Math.random() * 1000,
+      speed: 3 + Math.random() * 9,
       phase: Math.random() * Math.PI * 2,
-      speed: .035 + Math.random() * .07,
-      size: .35 + Math.random() * .65
+      size: .3 + Math.random() * .8,
+      opacity: .2 + Math.random() * .55
+    }));
+    const musicSmoke = Array.from({ length: 16 }, () => ({
+      position: Math.random() * 1000,
+      speed: 1 + Math.random() * 3,
+      phase: Math.random() * Math.PI * 2,
+      radius: 24 + Math.random() * 34,
+      opacity: .025 + Math.random() * .035
     }));
     let currentTrackIndex = 0;
     let musicPlayer;
@@ -1021,13 +1065,25 @@
     let musicIsMuted = false;
     let musicError = "";
     let musicHint = "";
+    let musicAutoSkipCount = 0;
     let musicConnectTimer;
     let musicProgressTimer;
     let musicSeeking = false;
     let musicPlaybackSeconds = 0;
     let musicParticleFrame = 0;
-    let musicParticleOpacity = 0;
+    let musicParticleIntensity = 0;
     let musicParticleTimestamp = 0;
+
+    function musicPerimeterPoint(distance, width, height, offset, drift) {
+      const perimeter = 2 * (width + height);
+      const position = ((distance % perimeter) + perimeter) % perimeter;
+      const left = musicParticlesPadding;
+      const top = musicParticlesPadding;
+      if (position < width) return { x: left + position + drift, y: top - offset };
+      if (position < width + height) return { x: left + width + offset, y: top + position - width + drift };
+      if (position < width * 2 + height) return { x: left + width - (position - width - height) + drift, y: top + height + offset };
+      return { x: left - offset, y: top + height - (position - width * 2 - height) + drift };
+    }
 
     function animateMusicDust(timestamp) {
       musicParticleFrame = 0;
@@ -1036,31 +1092,60 @@
       musicParticleTimestamp = timestamp;
       const volume = Number(musicVolume.value) / 100;
       const isAudible = musicIsPlaying && !musicIsMuted && volume > 0;
-      const targetOpacity = isAudible ? .68 * volume : 0;
-      musicParticleOpacity += (targetOpacity - musicParticleOpacity) * (1 - Math.exp(-elapsed * 3.2));
-      musicParticlesContext.clearRect(0, 0, musicParticlesSize, musicParticlesSize);
-      if (musicParticleOpacity > .008) {
+      const targetIntensity = isAudible ? .3 + volume * .7 : 0;
+      musicParticleIntensity += (targetIntensity - musicParticleIntensity) * (1 - Math.exp(-elapsed * 2.4));
+      musicParticlesContext.clearRect(0, 0, musicParticlesWidth, musicParticlesHeight);
+      if (isAudible) musicPlaybackSeconds += elapsed;
+      if (musicParticleIntensity > .008) {
         const time = timestamp / 1000;
-        const pulse = .5 + .5 * Math.sin(musicPlaybackSeconds * 4.8 + currentTrackIndex * 1.7 + Math.sin(time * .65));
+        const beat = .5 + .5 * Math.sin(musicPlaybackSeconds * 7.4 + currentTrackIndex * 1.7 + Math.sin(time * .55) * .25);
+        const pulse = .24 + beat * beat * .76;
+        const panelWidth = Math.max(1, musicParticlesWidth - musicParticlesPadding * 2);
+        const panelHeight = Math.max(1, musicParticlesHeight - musicParticlesPadding * 2);
+        const perimeter = 2 * (panelWidth + panelHeight);
+        const smokeOpacity = .1 + musicParticleIntensity * (.12 + pulse * .2);
+        musicPanel.style.setProperty("--music-smoke-opacity", smokeOpacity.toFixed(3));
+        musicPanel.style.setProperty("--music-smoke-x", `${(Math.sin(time * .24) * pulse * 5).toFixed(2)}px`);
+        musicPanel.style.setProperty("--music-smoke-y", `${(Math.cos(time * .2) * pulse * 4).toFixed(2)}px`);
+        musicPanel.style.setProperty("--music-smoke-scale", (1 + musicParticleIntensity * pulse * .045).toFixed(3));
+
+        musicParticlesContext.globalCompositeOperation = "screen";
+        musicSmoke.forEach(puff => {
+          const drift = Math.sin(time * .16 + puff.phase) * 9;
+          const point = musicPerimeterPoint(puff.position + time * puff.speed, panelWidth, panelHeight, 10 + Math.sin(time * .8 + puff.phase) * 7, drift);
+          const radius = puff.radius * (1 + pulse * .28);
+          const gradient = musicParticlesContext.createRadialGradient(point.x, point.y, 0, point.x, point.y, radius);
+          gradient.addColorStop(0, `rgba(204,198,181,${puff.opacity * musicParticleIntensity * (1 + pulse)})`);
+          gradient.addColorStop(.55, `rgba(190,194,183,${puff.opacity * musicParticleIntensity * .5})`);
+          gradient.addColorStop(1, "rgba(190,194,183,0)");
+          musicParticlesContext.fillStyle = gradient;
+          musicParticlesContext.fillRect(point.x - radius, point.y - radius, radius * 2, radius * 2);
+        });
+
+        musicParticlesContext.globalCompositeOperation = "lighter";
         musicDust.forEach(particle => {
-          const angle = particle.angle + time * particle.speed;
-          const radius = particle.radius + Math.sin(time * 1.25 + particle.phase) * (1 + pulse * 2.2);
-          const x = 62 + Math.cos(angle) * radius;
-          const y = 62 + Math.sin(angle) * radius;
-          const shimmer = .25 + .75 * (.5 + .5 * Math.sin(time * 1.8 + particle.phase + pulse * 2));
-          const alpha = Math.min(.72, musicParticleOpacity * shimmer * (.24 + pulse * .32));
+          const drift = Math.sin(time * .42 + particle.phase) * 8;
+          const breath = Math.sin(time * .9 + particle.phase) * (3 + pulse * 9);
+          const point = musicPerimeterPoint(particle.position + time * particle.speed, panelWidth, panelHeight, 3 + (particle.phase % 1) * 34 + breath, drift);
+          const shimmer = .35 + .65 * (.5 + .5 * Math.sin(time * 1.8 + particle.phase + pulse * 2));
+          const alpha = Math.min(.82, particle.opacity * musicParticleIntensity * shimmer * (.3 + pulse * .7));
           musicParticlesContext.beginPath();
-          musicParticlesContext.fillStyle = `rgba(234,217,184,${alpha})`;
-          musicParticlesContext.arc(x, y, particle.size * (.75 + pulse * .55), 0, Math.PI * 2);
+          musicParticlesContext.fillStyle = `rgba(245,231,201,${alpha})`;
+          musicParticlesContext.arc(point.x, point.y, particle.size * (.75 + pulse * .75), 0, Math.PI * 2);
           musicParticlesContext.fill();
         });
+      } else {
+        musicPanel.style.setProperty("--music-smoke-opacity", ".1");
       }
-      if (isAudible || musicParticleOpacity > .008) musicParticleFrame = window.requestAnimationFrame(animateMusicDust);
-      else musicParticleTimestamp = 0;
+      if (isAudible || musicParticleIntensity > .008) {
+        musicParticleFrame = window.requestAnimationFrame(animateMusicDust);
+      } else {
+        musicParticleTimestamp = 0;
+      }
     }
 
     function syncMusicDust() {
-      if (musicParticleMotionAllowed && musicParticlesContext && !musicParticleFrame && ((musicIsPlaying && !musicIsMuted && Number(musicVolume.value) > 0) || musicParticleOpacity > .008)) {
+      if (musicParticleMotionAllowed && musicParticlesContext && !musicParticleFrame && ((musicIsPlaying && !musicIsMuted && Number(musicVolume.value) > 0) || musicParticleIntensity > .008)) {
         musicParticleFrame = window.requestAnimationFrame(animateMusicDust);
       }
     }
@@ -1074,9 +1159,9 @@
       const duration = musicReady && musicPlayer ? musicPlayer.getDuration() : 0;
       const currentTime = musicReady && musicPlayer ? musicPlayer.getCurrentTime() : 0;
       musicPlaybackSeconds = currentTime;
-      musicElapsed.textContent = formatMusicTime(currentTime);
       musicDuration.textContent = formatMusicTime(duration);
       if (!musicSeeking) {
+        musicElapsed.textContent = formatMusicTime(currentTime);
         musicProgress.value = String(duration > 0 ? Math.round((currentTime / duration) * 1000) : 0);
       }
       musicProgress.setAttribute("aria-valuetext", `${formatMusicTime(currentTime)} / ${formatMusicTime(duration)}`);
@@ -1119,8 +1204,9 @@
       syncMusicDust();
     }
 
-    function playTrack(index) {
+    function playTrack(index, isAutomaticSkip = false) {
       currentTrackIndex = (index + youtubeVideoIds.length) % youtubeVideoIds.length;
+      if (!isAutomaticSkip) musicAutoSkipCount = 0;
       musicError = "";
       musicHint = "";
       musicRequested = true;
@@ -1160,6 +1246,16 @@
       return "YouTube bağlantı hatası";
     }
 
+    function setMusicExpanded(isExpanded) {
+      musicPanel.classList.toggle("is-expanded", isExpanded);
+      const label = isExpanded ? "Müzik listesini kapat" : "Müzik listesini aç";
+      musicExpand.setAttribute("aria-expanded", String(isExpanded));
+      musicExpand.setAttribute("aria-label", label);
+      musicExpand.title = label;
+      musicExpand.textContent = isExpanded ? "−" : "+";
+      resizeMusicParticles();
+    }
+
     function startMusic() {
       if (!musicReady || !musicPlayer) {
         musicRequested = false;
@@ -1170,6 +1266,7 @@
       musicRequested = true;
       musicError = "";
       musicHint = "";
+      musicAutoSkipCount = 0;
       waitForMusic();
       updateMusicControls();
       musicPlayer.setVolume(Number(musicVolume.value));
@@ -1192,12 +1289,7 @@
       if (button) playTrack(Number(button.dataset.trackIndex));
     });
     musicExpand.addEventListener("click", () => {
-      const isExpanded = musicPanel.classList.toggle("is-expanded");
-      const label = isExpanded ? "Müzik listesini kapat" : "Müzik listesini aç";
-      musicExpand.setAttribute("aria-expanded", String(isExpanded));
-      musicExpand.setAttribute("aria-label", label);
-      musicExpand.title = label;
-      musicExpand.textContent = isExpanded ? "−" : "+";
+      setMusicExpanded(!musicPanel.classList.contains("is-expanded"));
     });
 
     document.getElementById("enter-site").addEventListener("click", () => {
@@ -1261,10 +1353,6 @@
     musicArt.addEventListener("load", () => musicDisc.classList.remove("is-art-missing"));
     musicArt.addEventListener("error", () => musicDisc.classList.add("is-art-missing"));
     musicProgress.addEventListener("pointerdown", () => { musicSeeking = true; });
-    musicProgress.addEventListener("pointerup", () => {
-      musicSeeking = false;
-      updateMusicProgress();
-    });
     musicProgress.addEventListener("pointercancel", () => {
       musicSeeking = false;
       updateMusicProgress();
@@ -1282,9 +1370,14 @@
     });
     musicProgress.addEventListener("change", () => {
       const duration = musicReady && musicPlayer ? musicPlayer.getDuration() : 0;
-      if (duration > 0) musicPlayer.seekTo(duration * Number(musicProgress.value) / 1000, true);
+      const targetTime = duration * Number(musicProgress.value) / 1000;
+      if (duration > 0) {
+        musicPlayer.seekTo(targetTime, true);
+        musicPlaybackSeconds = targetTime;
+        musicElapsed.textContent = formatMusicTime(targetTime);
+      }
       musicSeeking = false;
-      updateMusicProgress();
+      if (duration <= 0) updateMusicProgress();
     });
 
     window.onYouTubeIframeAPIReady = function () {
@@ -1314,6 +1407,7 @@
               musicRequested = true;
               musicError = "";
               musicHint = "";
+              musicAutoSkipCount = 0;
               window.clearTimeout(musicConnectTimer);
               if (!musicProgressTimer) musicProgressTimer = window.setInterval(updateMusicProgress, 500);
             }
@@ -1337,10 +1431,16 @@
           },
           onError(event) {
             window.clearTimeout(musicConnectTimer);
+            if ([2, 100, 101, 150].includes(event.data) && musicAutoSkipCount < youtubeVideoIds.length - 1) {
+              musicAutoSkipCount += 1;
+              playTrack(currentTrackIndex + 1, true);
+              return;
+            }
             musicError = musicErrorMessage(event.data);
             musicIsPlaying = false;
             musicRequested = false;
             musicHint = "";
+            setMusicExpanded(true);
             updateMusicControls();
           },
           onAutoplayBlocked() {
