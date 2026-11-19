@@ -290,7 +290,7 @@
     .music-disc.is-playing img { transform: scale(1.55); }
     .music-disc.is-playing { box-shadow: 0 5px 17px rgba(0,0,0,.32), 0 0 18px rgba(212,189,145,.27); }
     .music-disc.is-art-missing img { opacity: 0; }
-    .music-particles { position: absolute; z-index: 1; top: -72px; left: -72px; width: calc(100% + 144px); height: calc(100% + 144px); overflow: visible; pointer-events: none; }
+    .music-particles { position: absolute; z-index: 1; top: -104px; left: -104px; width: calc(100% + 208px); height: calc(100% + 208px); overflow: visible; pointer-events: none; }
     .music-meta { position: relative; z-index: 5; grid-area: meta; display: grid; min-width: 0; align-content: center; gap: 2px; }
     .music-track { overflow: hidden; color: var(--ink); font-size: 12px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
     .music-state { display: -webkit-box; overflow: hidden; color: rgba(247,244,237,.66); font-size: 9px; line-height: 1.25; text-overflow: ellipsis; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
@@ -1021,7 +1021,7 @@
     const musicFallback = document.getElementById("music-fallback");
     const musicParticles = document.getElementById("music-particles");
     const musicParticlesContext = musicParticles.getContext("2d");
-    const musicParticlesPadding = 72;
+    const musicParticlesPadding = 104;
     let musicParticlesScale = 1;
     let musicParticlesWidth = 0;
     let musicParticlesHeight = 0;
@@ -1055,7 +1055,7 @@
       position: Math.random() * 1000,
       speed: 4 + Math.random() * 7,
       phase: Math.random() * Math.PI * 2,
-      radius: 30 + Math.random() * 38,
+      radius: 28 + Math.random() * 26,
       opacity: .065 + Math.random() * .045
     }));
     let currentTrackIndex = 0;
@@ -1112,8 +1112,8 @@
 
         musicParticlesContext.globalCompositeOperation = "screen";
         musicSmoke.forEach(puff => {
-          const drift = Math.sin(time * .12 + puff.phase) * 16;
-          const point = musicPerimeterPoint(puff.position + time * puff.speed, panelWidth, panelHeight, 16 + Math.sin(time * .35 + puff.phase) * 12, drift);
+          const drift = Math.sin(time * .12 + puff.phase) * 10;
+          const point = musicPerimeterPoint(puff.position + time * puff.speed, panelWidth, panelHeight, 12 + Math.sin(time * .35 + puff.phase) * 6, drift);
           const radius = puff.radius * (1 + pulse * .32);
           const gradient = musicParticlesContext.createRadialGradient(point.x, point.y, 0, point.x, point.y, radius);
           gradient.addColorStop(0, `rgba(218,210,190,${puff.opacity * musicParticleIntensity * (1.2 + pulse)})`);
